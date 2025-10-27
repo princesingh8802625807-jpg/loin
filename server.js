@@ -68,7 +68,7 @@ const transporter = nodemailer.createTransport({
   port: 587,
   auth: {
    user: process.env.BREVO_USER,
-   pass: process.env.BREVO_KEY
+   pass: process.env.BREVO_KEY,
   },
 });
 // Verify email connection
