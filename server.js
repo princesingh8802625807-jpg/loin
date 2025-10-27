@@ -66,11 +66,13 @@ const Feedback = mongoose.model("Feedback", feedbackSchema);
 const transporter = nodemailer.createTransport({
   host: "smtp-relay.brevo.com",
   port: 587,
+  secure: false, // 587 के लिए false
   auth: {
-   user: process.env.BREVO_USER,
-   pass: process.env.BREVO_KEY,
+    user: process.env.BREVO_USER,
+    pass: process.env.BREVO_KEY,
   },
 });
+
 // Verify email connection
 transporter.verify((error, success) => {
   if (error) {
