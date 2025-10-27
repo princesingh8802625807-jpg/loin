@@ -7,6 +7,8 @@ const cors = require("cors");
 
 const app = express();
 
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // --------------------
 // 🧩 Middlewares
 // --------------------
