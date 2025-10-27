@@ -64,13 +64,13 @@ const Feedback = mongoose.model("Feedback", feedbackSchema);
 // 📧 Gmail Transporter
 // --------------------
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp-relay.brevo.com",
+  port: 587,
   auth: {
-    user: process.env.COMPANY_EMAIL,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.BREVO_USER,
+    pass: process.env.BREVO_KEY,
   },
 });
-
 // Verify email connection
 transporter.verify((error, success) => {
   if (error) {
