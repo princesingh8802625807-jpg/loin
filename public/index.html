@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hyundai Customer Feedback</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Poppins", sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .container {
+    width: 100%;
+    max-width: 800px;
+    height: 100vh;
+    background: #fff;
+    padding: 40px 25px;
+    overflow-y: auto;
+    text-align: center;
+  }
+  .logo { width: 120px; margin-bottom: 15px; }
+  h2 { color: #000; margin-bottom: 10px; }
+  .input-field { margin: 10px 0; text-align: left; }
+  .input-field label { display: block; font-weight: 500; margin-bottom: 5px; color: #333; }
+  .input-field input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; outline: none; font-size: 16px; }
+  .rating, .yesno, .option-list { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+  .rating button, .yesno button, .option-btn {
+    padding: 10px 14px; border-radius: 8px; border: none; background: #e0e0e0; cursor: pointer; transition: 0.3s; font-size: 15px;
+  }
+  button.active { background: #007bff; color: white; transform: scale(1.1); }
+  .btn { background: #007bff; border: none; padding: 12px 24px; color: white; border-radius: 8px; cursor: pointer; margin-top: 15px; transition: 0.3s; font-size: 16px; }
+  .btn:hover { background: #0056b3; }
+  .progress { height: 10px; width: 100%; background: #ddd; border-radius: 5px; overflow: hidden; margin-top: 20px; }
+  .progress-bar { height: 100%; width: 0%; background: #007bff; transition: width 0.3s; }
+</style>
+</head>
+<body>
+<div class="container">
+  <img src="https://www.transparentpng.com/thumb/hyundai/hBFETU-hyundai-logo-background.png" alt="hyundai logo background @transparentpng.com" class="logo">
+  <h2 id="question">Customer Details</h2>
+  <div id="content"></div>
+  <button class="btn" id="nextBtn">Next</button>
+  <div class="progress">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+</div>
+
+<script>
+const steps = [
+  { type: "details", question: "Please enter your details" },
+  { type: "rating", question: "How would you rate your overall interaction & experience with workshop?" },
+  { type: "rating", question: "How would you rate the quality of maintenance & repair work done on your car?" },
+  { type: "rating", question: "How would you rate the condition or cleanliness of your car on return?" },
+  { type: "rating", question: "How would you rate the explanation given by service advisor on the work done of your car?" },
+  { type: "rating", question: "How would you rate the Service Delivery process of your car after servicing?" },
+  { type: "rating", question: "How would you rate the overall cleanliness of the Dealer Facility?" },
+  { type: "yesno", question: "Did you receive the car as per promised Date & Time?" },
+  { type: "yesno", question: "Were all the work reported by you completed?" },
+  { type: "yesno", question: "Were the repair charges reasonable with respect to the work done?" },
+  { type: "yesno", question: "Was the Pre Road Test conducted with you before opening the Repair Order?" },
+  { type: "options", question: "Did Service Advisor open your Repair Order in which device format?", options: ["Tablet", "PC", "Mobile"]},
+  { type: "rating", question: "How do you rate the courtesy & behaviour of the person who came to pick & drop your vehicle?" },
+  { type: "yesno", question: "Was the vehicle picked & dropped as per committed time?" },
+  { type: "yesno", question: "Did the SA inform you about the Estimate of Repair & Cost?" },
+  { type: "rating", question: "How would you rate the support provided by workshop in getting Insurance claim?" },
+  { type: "rating", question: "How would you rate the quality of Bodyshop repair work done on your car?" },
+  { type: "yesno", question: "Did the Workshop provide you regular updates about your vehicle status on WhatsApp Group?" },
+  { type: "yesno", question: "Were you provided the Final Road Test during delivery of the Vehicle?" }
+];
+
+let current = 0;
+let feedback = { name: "", vehicle: "", phone: "", answers: [] };
+const questionEl = document.getElementById("question");
+const contentEl = document.getElementById("content");
+const nextBtn = document.getElementById("nextBtn");
+const progressBar = document.getElementById("progressBar");
+
+function renderStep() {
+  contentEl.innerHTML = "";
+  const step = steps[current];
+  questionEl.textContent = step.type === "details" ? "Customer Details" : step.question;
+
+  if(step.type === "details") {
+    contentEl.innerHTML = `
+      <div class="input-field"><label>Name</label><input id="name" type="text" placeholder="Enter your name"></div>
+      <div class="input-field"><label>Vehicle</label><input id="vehicle" type="text" placeholder="Enter your vehicle no"></div>
+      <div class="input-field"><label>Phone</label><input id="phone" type="tel" placeholder="Enter your phone"></div>
+    `;
+  } else if(step.type === "rating") {
+    const div = document.createElement("div");
+    div.classList.add("rating");
+    for(let i=1; i<=10; i++){
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      btn.onclick = ()=> selectAnswer(i, btn);
+      div.appendChild(btn);
+    }
+    contentEl.appendChild(div);
+  } else if(step.type === "yesno") {
+    const div = document.createElement("div");
+    div.classList.add("yesno");
+    ["Yes","No"].forEach(ans=>{
+      const btn = document.createElement("button");
+      btn.textContent = ans;
+      btn.onclick = ()=> selectAnswer(ans, btn);
+      div.appendChild(btn);
+    });
+    contentEl.appendChild(div);
+  } else if(step.type === "options") {
+    const div = document.createElement("div");
+    div.classList.add("option-list");
+    step.options.forEach(opt=>{
+      const btn = document.createElement("button");
+      btn.textContent = opt;
+      btn.classList.add("option-btn");
+      btn.onclick = ()=> selectAnswer(opt, btn);
+      div.appendChild(btn);
+    });
+    contentEl.appendChild(div);
+  }
+  updateProgress();
+}
+
+function selectAnswer(value, btn){
+  feedback.answers[current - 1] = value;
+  contentEl.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+function updateProgress(){
+  const percent = ((current+1)/steps.length)*100;
+  progressBar.style.width = percent+"%";
+}
+
+nextBtn.addEventListener("click", ()=> {
+  const step = steps[current];
+  if (!step) return; // ताकि undefined error न आए
+
+  if (step.type === "details") {
+    const name = document.getElementById("name").value.trim();
+    const vehicle = document.getElementById("vehicle").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (!name || !vehicle || !phone) {
+      alert("Please fill all details.");
+      return;
+    }
+
+    feedback.name = name;
+    feedback.vehicle = vehicle;
+    feedback.phone = phone;
+  } else if (!feedback.answers[current - 1]) {
+    alert("Please select an answer before continuing.");
+    return;
+  }
+
+  current++;
+  if (current < steps.length) {
+    renderStep();
+  } else {
+    // ✅ यहीं नीचे वाला code लगाना है 👇
+
+    nextBtn.disabled = true;
+    nextBtn.textContent = "Please wait...";
+
+    fetch("/send-feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(feedback)
+    })
+    .then(res => res.json())
+    .then(data => {
+      nextBtn.disabled = false;
+      nextBtn.textContent = "Next";
+      
+      document.querySelector(".container").innerHTML = `
+        <img src="https://www.transparentpng.com/thumb/hyundai/hBFETU-hyundai-logo-background.png" class="logo">
+        <h2>Thank you for your feedback!</h2>
+        <p style="color:green;">Feedback submit successfully.</p>
+      `;
+    })
+    .catch(err => {
+      nextBtn.disabled = false;
+      nextBtn.textContent = "Next";
+      alert("Something went wrong while sending feedback!");
+      console.error(err);
+    });
+  }
+});
+
+renderStep();
+</script>
+</body>
+</html>
